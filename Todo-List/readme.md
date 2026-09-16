@@ -1,0 +1,103 @@
+# ⚡ FocusPro
+
+FocusPro is a modern productivity and task-management web application designed to help users organize tasks, manage time, maintain focus, and track their productivity from a single workspace.
+
+The application combines task management, focus sessions, calendar planning, alarms, stopwatch functionality, achievements, data export, customization, and cloud synchronization into one productivity platform.
+
+---
+
+## 🚀 Features
+
+### 📊 Dashboard
+- Central productivity dashboard
+- Overview of tasks and workspace activity
+- Quick access to important productivity tools
+
+### ✅ Task Management
+- Create and manage tasks
+- Organize daily tasks
+- Track task progress
+- Manage your personal task list from one place
+
+### ⏱️ Focus Timer
+- Built-in focus timer
+- Helps users maintain focused work sessions
+- Useful for productivity and time-management routines
+
+### 📅 Calendar
+- Calendar-based task planning
+- Organize tasks according to dates
+- Helps users manage schedules and upcoming work
+
+### 🏆 Achievements
+- Productivity achievement system
+- Track progress and completed activities
+- Encourages consistent productivity
+
+### 🔔 Alarms
+- Set alarms and reminders
+- Helps users remember important activities
+- Supports better time management
+
+### ⏱️ Stopwatch
+- Built-in stopwatch
+- Track the duration of activities and work sessions
+
+### ⚙️ Appearance & Customization
+- Multiple base themes
+- Multiple accent tones
+- Font scale customization
+- Interface animation toggle
+- Personalized workspace appearance
+
+### 📤 Data Export
+Users can export their task data in different formats:
+
+- 📄 PDF
+- 📊 CSV
+- 📗 Excel (XLSX)
+
+### ☁️ Cloud Synchronization
+- Cloud account integration
+- Synchronize workspace data
+- Account registration
+- Cloud account sign-in
+- Google Sign-In support
+- Firebase integration
+- Custom Firebase configuration through JSON
+
+### 🔐 Authentication
+- Email and password based account support
+- Google authentication
+- Cloud account registration and sign-in
+
+---
+
+## 🛠️ Technologies Used
+
+- HTML5
+- CSS3
+- JavaScript
+- Node.js
+- npm
+- Firebase
+- JSON
+- XLSX / Excel export
+- PDF export
+- CSV export
+
+---
+
+## 📁 Project Structure
+
+```text
+FocusPro/
+│
+├── index.html
+├── style.css
+├── script.js
+├── package.json
+├── package-lock.json
+├── test-pomo.js
+├── README.md
+└── .gitignore
