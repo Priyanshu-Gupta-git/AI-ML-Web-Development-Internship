@@ -57,19 +57,6 @@ Users can export their task data in different formats:
 - 📊 CSV
 - 📗 Excel (XLSX)
 
-### ☁️ Cloud Synchronization
-- Cloud account integration
-- Synchronize workspace data
-- Account registration
-- Cloud account sign-in
-- Google Sign-In support
-- Firebase integration
-- Custom Firebase configuration through JSON
-
-### 🔐 Authentication
-- Email and password based account support
-- Google authentication
-- Cloud account registration and sign-in
 
 ---
 
@@ -101,3 +88,19 @@ FocusPro/
 ├── test-pomo.js
 ├── README.md
 └── .gitignore
+## ⚙️ Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone <https://github.com/Priyanshu-Gupta-git/AI-ML-Web-Development-Internship/tree/c582870060b2c5cf57e93a67e6e63ca5526c0870/Todo-List>
+
+
+### 2. Open the Project Folder
+cd FocusPro
+
+### 3. Install Dependencies
+npm install
+###$ 4. Run the Project
+
+Open index.html in your browser, or use a local development server such as VS Code Live Server.
