@@ -1,1 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusPro - Advanced To-Do List & Productivity Suite</title>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- External CDN libraries -->
+    <!-- Firebase compatibility libraries (v8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+    <!-- SheetJS (Excel Export) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- jsPDF (PDF Export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="theme-dark">
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span style="font-size: 1.8rem;">⚡</span>
+                <h2>FocusPro</h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-target="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-target="tasks">
+                    <span class="nav-icon">📋</span>
+                    <span>Tasks</span>
+                </button>
+                <button class="nav-btn" data-target="pomodoro">
+                    <span class="nav-icon">⏱️</span>
+                    <span>Focus Timer</span>
+                </button>
+                <button class="nav-btn" data-target="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span>Calendar</span>
+                </button>
+                <button class="nav-btn" data-target="achievements">
+                    <span class="nav-icon">🏆</span>
+                    <span>Achievements</span>
+                </button>
+                <button class="nav-btn" data-target="alarms">
+                    <span class="nav-icon">🔔</span>
+                    <span>Alarms</span>
+                </button>
+                <button class="nav-btn" data-target="stopwatch">
+                    <span class="nav-icon">⏱️</span>
+                    <span>Stopwatch</span>
+                </button>
+                <button class="nav-btn" data-target="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <button id="menu-toggle-btn" class="icon-btn" style="display: none; width: 40px; height: 40px; font-size: 1.2rem; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-secondary);" title="Toggle Menu">☰</button>
+                    <div>
+                        <h1 id="page-title">Dashboard</h1>
+                        <p id="page-subtitle" class="subtitle">Overview of your productivity.</p>
+                    </div>
+                </div>
+                <div class="datetime-component">
+                    <div id="current-time">00:00 AM</div>
+                    <div id="current-date">Friday, July 17</div>
+                </div>
+            </header>
+
+            <!-- Views -->
+
+            <!-- View: Dashboard -->
+            <section id="view-dashboard" class="view-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">📋</span>
+                        <h3>Total Tasks</h3>
+                        <span class="stat-value" id="stat-total">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">✅</span>
+                        <h3>Completed</h3>
+                        <span class="stat-value text-success" id="stat-completed">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">⏳</span>
+                        <h3>Pending</h3>
+                        <span class="stat-value text-warning" id="stat-pending">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">📅</span>
+                        <h3>Today</h3>
+                        <span class="stat-value text-accent" id="stat-today">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">⚠️</span>
+                        <h3>Overdue</h3>
+                        <span class="stat-value text-danger" id="stat-overdue">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">🔥</span>
+                        <h3>High Priority</h3>
+                        <span class="stat-value text-danger" id="stat-high">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">⏱️</span>
+                        <h3>Pomo Sessions</h3>
+                        <span class="stat-value text-accent" id="stat-sessions">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">⏱️</span>
+                        <h3>Focus Time</h3>
+                        <span class="stat-value text-success" id="stat-focus-time">0m</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">📊</span>
+                        <h3>Avg Task Duration</h3>
+                        <span class="stat-value" id="stat-duration-avg">0m</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">🔔</span>
+                        <h3>Active Alarms</h3>
+                        <span class="stat-value text-warning" id="stat-active-alarms">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">⏰</span>
+                        <h3>Next Alarm</h3>
+                        <span class="stat-value" id="stat-next-alarm">None</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">⏱️</span>
+                        <h3>Stopwatch Sessions</h3>
+                        <span class="stat-value" id="stat-stopwatch-sessions">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">📈</span>
+                        <h3>Stopwatch Today</h3>
+                        <span class="stat-value text-success" id="stat-stopwatch-today">0s</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon" style="font-size: 1.5rem;">🏆</span>
+                        <h3>Stopwatch Longest</h3>
+                        <span class="stat-value text-accent" id="stat-stopwatch-longest">0s</span>
+                    </div>
+                </div>
+                <div class="dashboard-widgets" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                    <!-- Recent Tasks -->
+                    <div class="widget">
+                        <h3>Recent Tasks</h3>
+                        <ul id="recent-tasks-list" class="mini-list"></ul>
+                    </div>
+                    <!-- Recurring Task History -->
+                    <div class="widget">
+                        <h3>Recurring Task Templates</h3>
+                        <ul id="recurring-history-list" class="mini-list"></ul>
+                    </div>
+                    <!-- AI summary -->
+                    <div class="widget ai-summary-widget">
+                        <h3>AI Productivity Insights</h3>
+                        <div id="ai-summary-content" class="ai-content-body">Loading Insights...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Tasks -->
+            <section id="view-tasks" class="view-section">
+                <div class="glass-panel">
+                    <div class="task-controls">
+                        <div style="font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <span>Tasks Remaining:</span>
+                            <strong id="task-count" class="text-accent">0</strong>
+                        </div>
+                        <div class="sort-filter-group">
+                            <select id="sort-select" class="glass-select">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="priority">Priority</option>
+                            </select>
+                            <select id="filter-select" class="glass-select">
+                                <option value="all">All Tasks</option>
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                                <option value="favorite">Favorites</option>
+                                <option value="pinned">Pinned</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                            <button id="clear-completed" class="add-btn" style="background: rgba(239, 68, 68, 0.2); color: var(--danger-color); border: 1px solid rgba(239,68,68,0.2);">Clear Completed</button>
+                        </div>
+                    </div>
+
+                    <!-- Add task form -->
+                    <form id="todo-form" class="input-section">
+                        <div class="input-row">
+                            <input type="text" id="todo-input" placeholder="Add a new task..." required>
+                            <button type="button" id="mic-btn" class="icon-btn" title="Voice Input">🎤</button>
+                        </div>
+                        <div class="options-row">
+                            <select id="priority-input" class="glass-select">
+                                <option value="high">🔴 High</option>
+                                <option value="medium" selected>🟡 Medium</option>
+                                <option value="low">🟢 Low</option>
+                            </select>
+                            <input type="datetime-local" id="alarm-input" class="alarm-picker" title="Task Alarm">
+                            
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-secondary);">Duration:</span>
+                                <input type="number" id="duration-hours-input" class="glass-input" value="0" min="0" style="width: 60px;">
+                                <span style="font-size: 0.85rem; color: var(--text-secondary);">h</span>
+                                <input type="number" id="duration-minutes-input" class="glass-input" value="30" min="0" max="59" style="width: 60px;">
+                                <span style="font-size: 0.85rem; color: var(--text-secondary);">m</span>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 6px; padding: 0 8px;">
+                                <input type="checkbox" id="repeat-task-input" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                <label for="repeat-task-input" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; user-select: none;">Repeat Task</label>
+                            </div>
+
+                            <button type="submit" class="add-btn">Add Task</button>
+                        </div>
+                    </form>
+
+                    <!-- Task List -->
+                    <div class="list-section">
+                        <ul id="todo-list"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Pomodoro -->
+            <section id="view-pomodoro" class="view-section">
+                <div class="pomodoro-container glass-panel">
+                    <div class="pomo-tabs">
+                        <button class="pomo-tab active" data-mode="study">Study</button>
+                        <button class="pomo-tab" data-mode="break">Break</button>
+                    </div>
+                    <div class="timer-display">
+                        <svg class="progress-ring" width="240" height="240">
+                            <circle stroke="rgba(255, 255, 255, 0.03)" stroke-width="8" fill="transparent" r="110" cx="120" cy="120"></circle>
+                            <circle id="timer-progress" class="progress-ring__circle" stroke="var(--accent-color)" stroke-width="8" fill="transparent" r="110" cx="120" cy="120" stroke-linecap="round"></circle>
+                        </svg>
+                        <div id="timer-time" class="time-text">25:00</div>
+                    </div>
+                    <div id="pomo-status" class="pomo-status">Ready to focus?</div>
+                    <div class="pomo-controls">
+                        <button id="pomo-start" class="btn primary-btn">Start</button>
+                        <button id="pomo-pause" class="btn secondary-btn" style="display: none;">Pause</button>
+                        <button id="pomo-reset" class="btn outline-btn">Reset</button>
+                    </div>
+                    <div class="pomo-settings">
+                        <div>
+                            <label for="setting-study">Study Duration (min)</label>
+                            <input type="number" id="setting-study" class="glass-input" value="25" min="1">
+                        </div>
+                        <div>
+                            <label for="setting-break">Break Duration (min)</label>
+                            <input type="number" id="setting-break" class="glass-input" value="5" min="1">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Calendar -->
+            <section id="view-calendar" class="view-section">
+                <div class="calendar-container glass-panel">
+                    <div class="calendar-header">
+                        <button id="cal-prev" class="icon-btn">◀</button>
+                        <h2 id="cal-month-year">July 2026</h2>
+                        <button id="cal-next" class="icon-btn">▶</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="weekday">Sun</div>
+                        <div class="weekday">Mon</div>
+                        <div class="weekday">Tue</div>
+                        <div class="weekday">Wed</div>
+                        <div class="weekday">Thu</div>
+                        <div class="weekday">Fri</div>
+                        <div class="weekday">Sat</div>
+                        <!-- Days are dynamically injected here -->
+                    </div>
+                </div>
+                
+                <div id="day-tasks-panel" class="day-tasks-panel glass-panel" style="display: none;">
+                    <div class="panel-header">
+                        <h3 id="selected-date-title">Tasks</h3>
+                        <button id="close-day-panel" class="icon-btn" style="width: 32px; height: 32px;">✕</button>
+                    </div>
+                    <ul id="day-tasks-list" class="mini-list"></ul>
+                </div>
+            </section>
+
+            <!-- View: Achievements -->
+            <section id="view-achievements" class="view-section">
+                <div class="glass-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3 style="font-weight: 600;">Unlocked: <span id="achievements-unlocked-count">0/0</span></h3>
+                        <div style="width: 200px; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; border: 1px solid var(--glass-border);">
+                            <div id="achievements-progress-fill" style="width: 0%; height: 100%; background: var(--success-color); transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                    <div id="achievements-grid" class="achievements-grid"></div>
+                    
+                    <h3 style="margin-top: 40px; margin-bottom: 16px; font-weight: 600;">Unlock Log</h3>
+                    <ul id="achievement-log-list" class="mini-list"></ul>
+                </div>
+            </section>
+
+            <!-- View: Alarms (Standalone Alarms) -->
+            <section id="view-alarms" class="view-section">
+                <div class="settings-grid">
+                    <form id="alarm-create-form" class="glass-panel settings-card">
+                        <h3>Configure Alarm</h3>
+                        <input type="hidden" id="edit-alarm-id">
+                        
+                        <div class="settings-group">
+                            <label for="alarm-time">Alarm Time</label>
+                            <input type="time" id="alarm-time" class="glass-input" required>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <label for="alarm-title">Label / Message</label>
+                            <input type="text" id="alarm-title" class="glass-input" placeholder="Wake Up!">
+                        </div>
+                        
+                        <div class="settings-group">
+                            <label>Repeat Days</label>
+                            <div class="days-picker" style="display: flex; gap: 6px; margin-bottom: 16px;">
+                                <button type="button" class="day-select-btn" data-day="0" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">S</button>
+                                <button type="button" class="day-select-btn" data-day="1" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">M</button>
+                                <button type="button" class="day-select-btn" data-day="2" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">T</button>
+                                <button type="button" class="day-select-btn" data-day="3" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">W</button>
+                                <button type="button" class="day-select-btn" data-day="4" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">T</button>
+                                <button type="button" class="day-select-btn" data-day="5" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">F</button>
+                                <button type="button" class="day-select-btn" data-day="6" style="flex:1; padding:8px 0; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:8px; color:var(--text-secondary); cursor:pointer;">S</button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <label for="alarm-sound">Alarm Sound</label>
+                            <select id="alarm-sound" class="glass-select" style="width: 100%;">
+                                <option value="default">Default Beep</option>
+                                <option value="gentle">Gentle Chime</option>
+                                <option value="digital">Digital Alarm</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-group" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="alarm-vibrate" checked>
+                            <label for="alarm-vibrate" style="margin-bottom: 0; display: inline;">Vibrate Device</label>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button type="submit" id="save-alarm-btn" class="btn primary-btn" style="flex: 1;">Save Alarm</button>
+                            <button type="button" id="clear-alarm-form-btn" class="btn outline-btn" style="display: none; flex: 1;">Clear</button>
+                        </div>
+                    </form>
+
+                    <div class="glass-panel settings-card">
+                        <h3>Active Alarms</h3>
+                        <div id="next-alarm-countdown" style="font-size: 0.85rem; color: var(--accent-color); margin-bottom: 16px;">Calculating...</div>
+                        <ul id="alarms-list" class="mini-list"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Stopwatch -->
+            <section id="view-stopwatch" class="view-section">
+                <div class="settings-grid">
+                    <div class="glass-panel settings-card" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <h3>Stopwatch</h3>
+                        <div class="timer-display" style="width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--glass-border); display: flex; justify-content: center; align-items: center; margin: 24px auto;">
+                            <span id="stopwatch-time" style="font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums;">00:00:00.00</span>
+                        </div>
+                        <div class="pomo-controls" style="width: 100%; max-width: 320px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                            <button id="stopwatch-start" class="btn primary-btn" style="flex: 1;">Start</button>
+                            <button id="stopwatch-pause" class="btn secondary-btn" style="display: none; flex: 1;">Pause</button>
+                            <button id="stopwatch-resume" class="btn primary-btn" style="display: none; flex: 1;">Resume</button>
+                            <button id="stopwatch-lap" class="btn outline-btn" style="display: none; flex: 1;">Lap</button>
+                            <button id="stopwatch-stop" class="btn outline-btn" style="display: none; flex: 1; background: var(--danger-color); color: white; border: none;">Stop</button>
+                            <button id="stopwatch-reset" class="btn outline-btn" style="display: none; flex: 1;">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel settings-card" style="display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Sessions & Laps</h3>
+                        <div class="ai-stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                            <div class="ai-stat-item" style="background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Sessions</span>
+                                <strong id="sw-stats-sessions" style="font-size: 1.1rem; margin-top: 4px;">0</strong>
+                            </div>
+                            <div class="ai-stat-item" style="background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Avg Lap</span>
+                                <strong id="sw-stats-avg" style="font-size: 1.1rem; margin-top: 4px;">0.00s</strong>
+                            </div>
+                            <div class="ai-stat-item" style="background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Longest Lap</span>
+                                <strong id="sw-stats-longest" style="font-size: 1.1rem; margin-top: 4px;">0.00s</strong>
+                            </div>
+                        </div>
+                        
+                        <div style="flex: 1; overflow-y: auto; max-height: 220px;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-secondary);">
+                                        <th style="padding: 8px;">Lap</th>
+                                        <th style="padding: 8px;">Split Time</th>
+                                        <th style="padding: 8px;">Total Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stopwatch-laps-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Settings -->
+            <section id="view-settings" class="view-section">
+                <div class="settings-grid">
+                    <!-- Appearance settings -->
+                    <div class="glass-panel settings-card">
+                        <h3>Appearance Settings</h3>
+                        
+                        <div class="settings-group">
+                            <label>Base Theme</label>
+                            <div class="theme-picker" style="display: flex; gap: 10px;">
+                                <button type="button" class="theme-btn active" data-theme="dark" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #1e1b4b; cursor: pointer;" title="Dark Theme"></button>
+                                <button type="button" class="theme-btn" data-theme="light" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #f1f5f9; cursor: pointer;" title="Light Theme"></button>
+                                <button type="button" class="theme-btn" data-theme="amoled" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #000; cursor: pointer;" title="AMOLED Black Theme"></button>
+                                <button type="button" class="theme-btn" data-theme="blue" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #1e3a8a; cursor: pointer;" title="Navy Theme"></button>
+                                <button type="button" class="theme-btn" data-theme="green" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #064e3b; cursor: pointer;" title="Forest Theme"></button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label>Accent Tone</label>
+                            <div class="accent-picker" style="display: flex; gap: 10px;">
+                                <button type="button" class="accent-btn active" data-accent="#6366f1" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #6366f1; cursor: pointer;" title="Indigo"></button>
+                                <button type="button" class="accent-btn" data-accent="#10b981" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #10b981; cursor: pointer;" title="Green"></button>
+                                <button type="button" class="accent-btn" data-accent="#f59e0b" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #f59e0b; cursor: pointer;" title="Yellow"></button>
+                                <button type="button" class="accent-btn" data-accent="#ef4444" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #ef4444; cursor: pointer;" title="Red"></button>
+                                <button type="button" class="accent-btn" data-accent="#ec4899" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: #ec4899; cursor: pointer;" title="Pink"></button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="font-size-select">Font Scale</label>
+                            <select id="font-size-select" class="glass-select" style="width: 100%;">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+
+                        <div class="settings-group" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="animations-toggle" checked>
+                            <label for="animations-toggle" style="margin-bottom: 0; display: inline;">Interface Animations</label>
+                        </div>
+                    </div>
+
+                    <!-- Export operations -->
+                    <div class="glass-panel settings-card">
+                        <h3>Export Workspace Data</h3>
+                        <div class="export-buttons" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                            <button id="export-pdf-btn" class="btn outline-btn" style="text-align: left; display: flex; align-items: center; gap: 8px;">📄 Export Task List as PDF</button>
+                            <button id="export-csv-btn" class="btn outline-btn" style="text-align: left; display: flex; align-items: center; gap: 8px;">📊 Export Task List as CSV</button>
+                            <button id="export-excel-btn" class="btn outline-btn" style="text-align: left; display: flex; align-items: center; gap: 8px;">📥 Export Task List as Excel (XLSX)</button>
+                        </div>
+                    </div>
+
+                    <!-- Firebase Synchronization -->
+                    <div class="glass-panel settings-card">
+                        <h3>Cloud Synchronization</h3>
+                        
+                        <div id="firebase-logged-out">
+                            <form id="email-auth-form" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+                                <div class="settings-group">
+                                    <label for="auth-email">Cloud Account Email</label>
+                                    <input type="email" id="auth-email" class="glass-input" placeholder="you@example.com" required>
+                                </div>
+                                <div class="settings-group">
+                                    <label for="auth-password">Account Password</label>
+                                    <input type="password" id="auth-password" class="glass-input" placeholder="••••••••" required>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="submit" class="btn primary-btn" style="flex: 1;">Connect & Sync</button>
+                                    <button type="button" id="email-signup-btn" class="btn outline-btn" style="flex: 1;">Register Account</button>
+                                </div>
+                            </form>
+                            <button id="google-login-btn" class="btn outline-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">🔑 Sign In with Google</button>
+                        </div>
+
+                        <div id="firebase-logged-in" style="display: none; flex-direction: column; gap: 16px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div id="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">U</div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span id="user-email" style="font-weight: 600; font-size: 0.95rem;">user@example.com</span>
+                                    <span id="sync-status" class="text-success" style="font-size: 0.8rem;">Synced</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="manual-sync-btn" class="btn primary-btn" style="flex: 1;">Sync Now</button>
+                                <button id="logout-btn" class="btn outline-btn" style="flex: 1; color: var(--danger-color); border-color: rgba(239,68,68,0.2);">Log Out</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group" style="border-top: 1px solid var(--glass-border); padding-top: 16px; margin-top: 16px;">
+                            <label for="firebase-config-input">Custom Firebase Config (JSON)</label>
+                            <textarea id="firebase-config-input" class="glass-input" rows="4" style="resize: vertical; font-family: monospace; font-size: 0.8rem;" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}'></textarea>
+                            <button id="save-firebase-config" class="btn outline-btn" style="width: 100%; margin-top: 8px;">Save Firebase Connection</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Modal: Voice Recognition Overlay -->
+    <div id="mic-overlay" class="modal-overlay" style="display: none;">
+        <div class="glass-panel mic-modal" style="width: 100%; max-width: 320px;">
+            <div class="pulsing-mic" style="font-size: 3.5rem;">🎤</div>
+            <h3>Listening for Task...</h3>
+            <p class="mic-hint">Speak clearly to describe your task.</p>
+            <button id="stop-mic-btn" class="btn outline-btn" style="width: 100%; margin-top: 10px;">Stop Listening</button>
+        </div>
+    </div>
+
+    <!-- Modal: Task Edit Details -->
+    <div id="task-edit-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-panel edit-modal" style="width: 100%; max-width: 500px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative;">
+            <button id="close-edit-modal" class="icon-btn" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px;">✕</button>
+            <h3>Edit Task Details</h3>
+            <form id="edit-task-form" style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="hidden" id="edit-task-id">
+                <div class="settings-group">
+                    <label for="edit-task-text">Task Name</label>
+                    <input type="text" id="edit-task-text" class="glass-input" required>
+                </div>
+                <div class="settings-group">
+                    <label for="edit-task-desc">Description</label>
+                    <textarea id="edit-task-desc" class="glass-input" rows="3" style="resize: vertical;"></textarea>
+                </div>
+                <div class="settings-group">
+                    <label for="edit-task-priority">Priority</label>
+                    <select id="edit-task-priority" class="glass-select" style="width: 100%;">
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="edit-task-category">Category</label>
+                    <input type="text" id="edit-task-category" class="glass-input" placeholder="Work, Personal, etc.">
+                </div>
+                <div class="settings-group">
+                    <label for="edit-task-alarm">Alarm Date & Time</label>
+                    <input type="datetime-local" id="edit-task-alarm" class="alarm-picker" style="width: 100%;">
+                </div>
+                <div class="settings-group">
+                    <label for="edit-task-tags">Tags (comma separated)</label>
+                    <input type="text" id="edit-task-tags" class="glass-input" placeholder="tag1, tag2">
+                </div>
+                <div class="settings-group">
+                    <label>Planned Duration</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="number" id="edit-task-duration-hours" class="glass-input" min="0" style="width: 80px;">
+                        <span style="color: var(--text-secondary);">hours</span>
+                        <input type="number" id="edit-task-duration-minutes" class="glass-input" min="0" max="59" style="width: 80px;">
+                        <span style="color: var(--text-secondary);">mins</span>
+                    </div>
+                </div>
+                <div class="settings-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="edit-task-repeat" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent-color);">
+                    <label for="edit-task-repeat" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; user-select: none;">Repeat Task Daily</label>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 8px;">
+                    <button type="submit" class="btn primary-btn" style="flex: 1;">Save Changes</button>
+                    <button type="button" id="cancel-edit-btn" class="btn outline-btn" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Task Alarm Alert (Firing) -->
+    <div id="alarm-alert-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-panel alarm-modal" style="width: 100%; max-width: 400px; padding: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px;">
+            <div class="alarm-icon-bounce" style="font-size: 3rem; animation: bounce 1.5s infinite;">⏰</div>
+            <h3>Task Reminder!</h3>
+            <input type="hidden" id="alarm-task-id">
+            <div id="alarm-task-text" style="font-size: 1.2rem; font-weight: 600; color: white;">Task Title</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                <button id="complete-alarm-btn" class="btn primary-btn" style="background: var(--success-color); color: white;">Mark as Completed</button>
+                <button id="dismiss-alarm-btn" class="btn outline-btn">Dismiss Alarm</button>
+            </div>
+            
+            <div style="border-top: 1px solid var(--glass-border); width: 100%; padding-top: 16px; margin-top: 8px;">
+                <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Snooze Alarm</h4>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px;">
+                    <button class="snooze-btn btn outline-btn" data-time="5" style="padding: 6px 12px; font-size: 0.8rem;">5m</button>
+                    <button class="snooze-btn btn outline-btn" data-time="10" style="padding: 6px 12px; font-size: 0.8rem;">10m</button>
+                    <button class="snooze-btn btn outline-btn" data-time="15" style="padding: 6px 12px; font-size: 0.8rem;">15m</button>
+                    <button class="snooze-btn btn outline-btn" data-time="30" style="padding: 6px 12px; font-size: 0.8rem;">30m</button>
+                    <button class="snooze-btn btn outline-btn" data-time="custom" style="padding: 6px 12px; font-size: 0.8rem; border-color: var(--accent-color); color: var(--accent-color);">Custom</button>
+                </div>
+                <div id="custom-snooze-container" style="display: none; display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 12px;">
+                    <input type="number" id="custom-snooze-time" class="glass-input" min="1" placeholder="Mins" style="width: 80px; text-align: center;">
+                    <button id="apply-custom-snooze" class="btn primary-btn" style="padding: 8px 16px; font-size: 0.85rem;">Snooze</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Standalone Alarm Firing -->
+    <div id="standalone-alarm-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-panel alarm-modal" style="width: 100%; max-width: 400px; padding: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px;">
+            <div class="alarm-icon-bounce" style="font-size: 3.5rem; animation: bounce 1s infinite;">🔔</div>
+            <h3 id="standalone-alarm-popup-title">Wake Up!</h3>
+            <div id="standalone-alarm-popup-time" style="font-size: 2.2rem; font-weight: 700; color: white;">07:00 AM</div>
+            <div id="standalone-alarm-popup-label" style="font-size: 0.85rem; color: var(--accent-color); font-weight: 600;">Mon, Tue, Wed</div>
+            <button id="dismiss-standalone-alarm-btn" class="btn primary-btn" style="width: 100%; padding: 12px; margin-top: 10px;">Dismiss Alarm</button>
+        </div>
+    </div>
+
+    <!-- Toast: Achievement Unlocked Notification -->
+    <div id="achievement-popup" class="achievement-toast notification-toast" style="display: none; position: fixed; top: 24px; right: 24px; z-index: 9999;">
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <span style="font-size: 2rem;">🏆</span>
+            <div style="text-align: left;">
+                <div id="achievement-popup-name" style="font-weight: 700; font-size: 0.95rem; color: var(--warning-color);">Achievement Unlocked!</div>
+                <div id="achievement-popup-desc" style="font-size: 0.8rem; color: var(--text-primary); margin-top: 2px;">Description</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Core App Logic -->
+    <script src="script.js"></script>
+</body>
+</html>
