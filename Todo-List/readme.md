@@ -104,3 +104,7 @@ npm install
 ###$ 4. Run the Project
 
 Open index.html in your browser, or use a local development server such as VS Code Live Server.
+
+# Project Flow
+<img width="1348" height="623" alt="image" src="https://github.com/user-attachments/assets/4cada353-13ec-4ff7-ba50-cefe7e08bf6b" />
+
